@@ -25,6 +25,8 @@ type ChatState = {
     chatId: string;
     title?: string;
     phone?: string;
+    contactName?: string;
+    avatar?: string;
   }) => ResolveChatResult | null;
 };
 
@@ -36,7 +38,13 @@ function digitsOnly(value: string | number | undefined): string {
 function rekeyChat(
   chats: Chat[],
   previousId: string,
-  next: { chatId: string; phone?: string },
+  next: {
+    chatId: string;
+    phone?: string;
+    title?: string;
+    contactName?: string;
+    avatar?: string;
+  },
 ): Chat[] {
   return chats.map((c) =>
     c.chatId === previousId
@@ -45,6 +53,32 @@ function rekeyChat(
           id: next.chatId,
           chatId: next.chatId,
           phone: c.phone ?? next.phone,
+          title: next.title && !c.contactName ? next.title : c.title,
+          contactName: next.contactName ?? c.contactName,
+          avatar: next.avatar ?? c.avatar,
+        }
+      : c,
+  );
+}
+
+function patchChatInfo(
+  chats: Chat[],
+  chatId: string,
+  patch: {
+    title?: string;
+    contactName?: string;
+    avatar?: string;
+    phone?: string;
+  },
+): Chat[] {
+  return chats.map((c) =>
+    c.chatId === chatId
+      ? {
+          ...c,
+          phone: c.phone ?? patch.phone,
+          title: patch.title && !c.contactName ? patch.title : c.title,
+          contactName: patch.contactName ?? c.contactName,
+          avatar: patch.avatar ?? c.avatar,
         }
       : c,
   );
@@ -115,12 +149,27 @@ export const useChatStore = create<ChatState>()(
      *   переклюение ключа (случай 2), вызывающий использует его для вызова
      *   messageStore.rekeyChatMessages() и переноса истории сообщений.
      */
-    resolveChatFromNotification: ({ chatId, phone }) => {
+    resolveChatFromNotification: ({ chatId, title, phone, contactName, avatar }) => {
       const state = get();
       const phoneDigits = digitsOnly(phone);
 
       const byId = state.chats.find((c) => c.chatId === chatId);
       if (byId) {
+        const needsPatch =
+          (title && !byId.contactName) ||
+          (contactName && !byId.contactName) ||
+          (avatar && !byId.avatar) ||
+          (phoneDigits && !byId.phone);
+        if (needsPatch) {
+          set({
+            chats: patchChatInfo(state.chats, chatId, {
+              title,
+              contactName: contactName || title || undefined,
+              avatar,
+              phone: phoneDigits,
+            }),
+          });
+        }
         return { chatId, previousChatId: null };
       }
 
@@ -134,6 +183,9 @@ export const useChatStore = create<ChatState>()(
           chats: rekeyChat(state.chats, previousId, {
             chatId,
             phone: phoneDigits || byPhone.phone,
+            title,
+            contactName: contactName || title || undefined,
+            avatar,
           }),
           activeChatId:
             state.activeChatId === previousId ? chatId : state.activeChatId,

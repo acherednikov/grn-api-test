@@ -5,7 +5,7 @@ import { useMessageStore } from "@/entities/message";
 
 import { sendMessage } from "../api/sendMessage";
 
-export function useSendMessage(chatId?: string) {
+export function useSendMessage(chatId: string | null) {
   const credentials = useSessionStore((s) => s.credentials);
   const appendMessage = useMessageStore((s) => s.appendMessage);
 

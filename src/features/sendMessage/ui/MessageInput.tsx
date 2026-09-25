@@ -4,7 +4,7 @@ import { Button, Input } from "@/shared/ui";
 import { useSendMessage } from "../model/useSendMessage";
 
 type MessageInputProps = {
-  chatId?: string;
+  chatId: string | null;
 };
 
 export function MessageInput({ chatId }: MessageInputProps) {

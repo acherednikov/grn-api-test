@@ -4,6 +4,8 @@ import {
 } from "@/shared/api/greenApiClient";
 import type { GreenApiCredentials } from "@/shared/api/types";
 
+// https://green-api.com/v3/docs/api/service/CheckAccount/
+
 export type CheckAccountResponse = {
   exist?: boolean;
   chatId?: string;

@@ -3,7 +3,7 @@ import { MessageBubble, useMessageStore, type Message } from "@/entities/message
 const EMPTY_MESSAGES: Message[] = [];
 
 type MessageListProps = {
-  chatId?: string;
+  chatId: string | null;
   className?: string;
 };
 
