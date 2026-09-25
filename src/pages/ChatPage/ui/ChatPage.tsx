@@ -4,7 +4,7 @@ import { useChatStore } from "@/entities/chat";
 import { useSessionStore } from "@/entities/session";
 import { ChatSidebar } from "@/widgets/ChatSidebar";
 import { MessagePanel } from "@/widgets/MessagePanel";
-// import { useMessagePolling } from "@/features/receiveMessages";
+import { useMessagePolling } from "@/features/receiveMessages";
 import { Button } from "@/shared/ui";
 
 export function ChatPage() {
@@ -12,7 +12,7 @@ export function ChatPage() {
   const clearSession = useSessionStore((s) => s.clearSession);
   const hasActiveChat = useChatStore((s) => s.activeChatId !== null);
 
-  // useMessagePolling(true);
+  useMessagePolling(true);
 
   const onLogout = () => {
     clearSession();

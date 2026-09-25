@@ -9,7 +9,11 @@ import type {
 
 export async function receiveNotification(
   credentials: GreenApiCredentials,
+  options?: { signal?: AbortSignal },
 ): Promise<ReceiveNotificationResponse> {
   const url = buildGreenApiUrl(credentials, "receiveNotification");
-  return greenApiFetch<ReceiveNotificationResponse>(url, { method: "GET" });
+  return greenApiFetch<ReceiveNotificationResponse>(url, {
+    method: "GET",
+    signal: options?.signal,
+  });
 }

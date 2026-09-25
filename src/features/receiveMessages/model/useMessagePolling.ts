@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useChatStore } from "@/entities/chat";
 import {
@@ -7,94 +7,85 @@ import {
 } from "@/entities/message";
 import { useSessionStore } from "@/entities/session";
 import { POLL_INTERVAL_MS } from "@/shared/config/constants";
+import { ReceiveNotificationResponse } from "@/shared/api/types";
 
-import { receiveNotification } from "../api/receiveNotification";
 import { deleteNotification } from "../api/deleteNotification";
+import { receiveNotification } from "../api/receiveNotification";
 
-/**
- * Один цикл: receive → map → resolve chat → (rekey if needed) → append → delete
- * (не-text webhook тоже удаляем, чтобы очередь не вставала).
- */
 export function useMessagePolling(enabled: boolean) {
   const credentials = useSessionStore((s) => s.credentials);
 
   const appendMessage = useMessageStore((s) => s.appendMessage);
   const rekeyChatMessages = useMessageStore((s) => s.rekeyChatMessages);
-
   const resolveChatFromNotification = useChatStore(
     (s) => s.resolveChatFromNotification,
   );
 
-  const ticking = useRef(false);
+  return useQuery({
+    queryKey: ["green-api", "notifications", credentials?.idInstance],
+    queryFn: async ({ signal }: { signal: AbortSignal }) => {
+      if (!credentials) return null;
 
-  useEffect(() => {
-    if (!enabled || !credentials) return;
+      // Очищаем всю доступную очередь за один цикл (Drain Queue)
+      while (!signal.aborted) {
+        let notification: ReceiveNotificationResponse = null;
 
-    let cancelled = false;
+        try {
+          // Забираем следующее уведомление из очереди
+          notification = await receiveNotification(credentials, { signal });
+        } catch (error) {
+          // fetch при отмене кидает DOMException с name="AbortError", а не просто
+          // выставляет signal.aborted — проверяем явно, чтобы не путать отмену с ошибкой сети.
+          if (error instanceof DOMException && error.name === "AbortError") break;
 
-    const tick = async () => {
-      if (cancelled || ticking.current) return;
+          // Если запрос прерван штатно (размонтирование/отмена) — прерываем цикл
+          if (signal.aborted) break;
 
-      ticking.current = true;
-
-      try {
-        // 1) Забираем одно уведомление из очереди GREEN-API
-        const notification = await receiveNotification(credentials);
-        console.log("notification incoming >", notification);
-        if (!notification) return;
-
-        // 2) Превращаем его в доменное Message (фильтруем неподдерживаемые типы)
-        const mapped = mapNotificationToMessage(notification.body);
-        if (mapped) {
-          const sender = notification.body.senderData;
-
-          // 3) Связываем уведомление с локальным чатом:
-          // - либо находим уже существующий по MAX chatId,
-          // - либо переключаем временный чат phone@c.us в настоящий MAX chatId
-          // (если CheckAccount раньше не сработал),
-          // - либо возвращаем null (новый чат из уведомления не создаём).
-          const resolved = resolveChatFromNotification({
-            chatId: mapped.chatId,
-            title: sender?.chatName || sender?.senderName,
-            phone:
-              sender?.senderPhoneNumber !== undefined
-                ? String(sender.senderPhoneNumber)
-                : undefined,
-          });
-
-          if (resolved) {
-            // 4) Если чат был переключен на новый ключ — переносим накопленные
-            // сообщения из старого ключа в новый (в messageStore).
-            if (resolved.previousChatId) {
-              rekeyChatMessages(resolved.previousChatId, resolved.chatId);
-            }
-            // 5) Добавляем новое сообщение в уже актуальный чат
-            appendMessage({ ...mapped, chatId: resolved.chatId });
-          }
+          // Сетевая ошибка получения уведомления — прерываем этот такт, попробуем на следующем интервале
+          break;
         }
 
-        // 6) В любом случае (даже если webhook не текстовый) удаляем уведомление
-        // из очереди GREEN-API, чтобы оно не блокировало следующие.
-        await deleteNotification(credentials, notification.receiptId);
-      } catch {
-        /* сеть/API — следующий интервал */
-      } finally {
-        ticking.current = false;
+        // Очередь пуста — завершаем текущий такт
+        if (!notification) break;
+
+        // Обрабатываем уведомление для записи в стор message
+        try {
+          const mapped = mapNotificationToMessage(notification.body);
+
+          if (mapped) {
+            const sender = notification.body.senderData;
+
+            const resolved = resolveChatFromNotification({
+              chatId: mapped.chatId,
+              title: sender?.chatName || sender?.senderName,
+              phone:
+                sender?.senderPhoneNumber !== undefined
+                  ? String(sender.senderPhoneNumber)
+                  : undefined,
+            });
+
+            if (resolved) {
+              if (resolved.previousChatId) {
+                rekeyChatMessages(resolved.previousChatId, resolved.chatId);
+              }
+              appendMessage({ ...mapped, chatId: resolved.chatId });
+            }
+          }
+        } catch (_error) {
+          // Ошибка парсинга или обновления стора
+        } finally {
+          // Гарантированно удаляем обработанный/пропущенный webhook из очереди
+          await deleteNotification(credentials, notification.receiptId);
+        }
       }
-    };
 
-    const id = window.setInterval(tick, POLL_INTERVAL_MS);
-    void tick();
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, [
-    appendMessage,
-    credentials,
-    enabled,
-    rekeyChatMessages,
-    resolveChatFromNotification,
-  ]);
+      return true;
+    },
+    enabled: enabled && Boolean(credentials),
+    refetchInterval: POLL_INTERVAL_MS,
+    refetchIntervalInBackground: false, // Отключает поллинг на неактивной вкладке
+    refetchOnWindowFocus: true, // Сразу запрашивает новые сообщения при возврате на вкладку
+    retry: false, // Ошибки сети обрабатываются на следующем интервале
+    gcTime: 0, // Не хранить закешированный результат в памяти
+  });
 }
