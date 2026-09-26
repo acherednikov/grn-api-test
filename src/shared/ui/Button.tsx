@@ -21,7 +21,7 @@ export function Button({
         variant === "primary" &&
           "bg-violet-500 text-white hover:bg-violet-600",
         variant === "ghost" &&
-          "bg-transparent text-violet-500 hover:bg-violet-600 hover:text-white",
+          "bg-transparent text-violet-500 hover:text-white",
         className,
       )}
       {...props}

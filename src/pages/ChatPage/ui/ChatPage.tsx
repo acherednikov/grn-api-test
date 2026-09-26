@@ -21,12 +21,12 @@ export function ChatPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <nav className="flex items-center justify-between bg-dark-bg px-4 py-2 border-b border-gray-700">
+      {/* <nav className="flex items-center justify-between bg-dark-bg px-4 py-2 border-b border-gray-700">
         <span className="text-sm font-semibold text-white">GREEN-API Chat</span>
         <Button variant="ghost" onClick={onLogout}>
           Выйти
         </Button>
-      </nav>
+      </nav> */}
       <div className="flex min-h-0 flex-1">
         <ChatSidebar
           className={`flex-1 basis-0 lg:min-w-[320px] lg:max-w-sm lg:basis-auto ${

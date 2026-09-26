@@ -8,20 +8,13 @@ import { MessageList } from "./MessageList";
 
 export function MessagePanel({ className }: { className?: string }) {
   const activeChat = useChatStore((s) => s.getActiveChat());
-  console.log('> activeChat', activeChat);
 
-  // const activeChatId = useChatStore((s) => s.activeChatId);
-  // const activeChatTitle = useChatStore((s) =>
-  //   s.activeChatId
-  //     ? s.chats.find((c) => c.chatId === s.activeChatId)?.title ?? ""
-  //     : "",
-  // );
   const clearActiveChat = useChatStore((s) => s.clearActiveChat);
 
   return (
     <main
       className={cn(
-        "flex min-w-0 flex-1 flex-col pb-3 bg-gray-600",
+        "flex min-w-0 flex-1 flex-col pb-3 bg-slate-800 seamless-pattern",
         className,
       )}
     >

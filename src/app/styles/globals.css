@@ -17,6 +17,16 @@ body {
   min-height: 100dvh;
 }
 
+.seamless-pattern {  
+  /* 
+    Credit: 
+    https://www.vecteezy.com/png/24212191-seamless-pattern-of-rainbow-and-fluffy-sheep-watercolor-hand-painted-design-for-baby-shower-party-birthday-cake-holiday-design-greetings-card-invitation-fabric-textile 
+  */
+  background-image: url('/assets/seamless-pattern.png');
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
 @theme {
   --color-dark-bg: rgb(37, 38, 45);
 }

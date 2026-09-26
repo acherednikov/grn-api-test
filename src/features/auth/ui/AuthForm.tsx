@@ -1,15 +1,20 @@
 import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { useSessionStore } from "@/entities/session";
 import { Button, Input } from "@/shared/ui";
 import { DEFAULT_GREEN_API_URL } from "@/shared/config/constants";
+
 import {
   validateCredentials,
   type AuthFormValues,
 } from "../model/validateCredentials";
 
+// TODO: валидация инстанса через https://green-api.com/v3/docs/api/account/GetStateInstance/
+
 export function AuthForm() {
   const navigate = useNavigate();
+
   const setCredentials = useSessionStore((s) => s.setCredentials);
 
   const [values, setValues] = useState<AuthFormValues>({
@@ -39,7 +44,7 @@ export function AuthForm() {
       <p className="text-white font-semibold text-center">Убедитесь, что ваш инстанс авторизован</p>
       <Input
         name="idInstance"
-        label="idInstance"
+        label="ID инстанса (idInstance)"
         value={values.idInstance}
         onChange={(e) =>
           setValues((v) => ({ ...v, idInstance: e.target.value }))
@@ -49,7 +54,7 @@ export function AuthForm() {
       />
       <Input
         name="apiTokenInstance"
-        label="apiTokenInstance"
+        label="API-токен (apiTokenInstance)"
         type="password"
         value={values.apiTokenInstance}
         onChange={(e) =>

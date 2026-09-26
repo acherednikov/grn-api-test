@@ -16,17 +16,20 @@ export const ChatList = memo(function ChatList() {
   }
 
   return (
-    <ul className="flex-1 overflow-y-auto">
-      {chats.map((chat) => (
-        <li key={chat.id}>
-          <ChatItem
-            chat={chat}
-            isActive={activeChatId === chat.chatId}
-            onSelect={setActiveChat}
-          />
-        </li>
-      ))}
-    </ul>
+    <>
+      <h2 className="text-white pl-4 text-medium">Чаты</h2>
+      <ul className="flex-1 overflow-y-auto">
+        {chats.map((chat) => (
+          <li key={chat.id}>
+            <ChatItem
+              chat={chat}
+              isActive={activeChatId === chat.chatId}
+              onSelect={setActiveChat}
+            />
+          </li>
+        ))}
+      </ul>
+    </>
   );
 });
 

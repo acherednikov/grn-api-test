@@ -37,7 +37,7 @@ export const CreateChatForm = memo(function CreateChatForm() {
     >
       <Input
         name="phone"
-        label="Номер получателя"
+        label="Номер контакта"
         placeholder="79991234567"
         value={phone}
         onChange={(e) => {
