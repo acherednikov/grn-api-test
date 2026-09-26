@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import { cn } from "@/shared/lib/cn";
-import { Avatar } from "@/shared/ui";
+import { Avatar, Button } from "@/shared/ui";
 
 import type { Chat } from "../model/types";
 
@@ -17,11 +17,12 @@ export const ChatItem = memo(function ChatItem({
   onSelect,
 }: ChatItemProps) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={() => onSelect(chat.chatId)}
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white hover:bg-gray-600 cursor-pointer",
+        // "flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white bg-dark-bg hover:bg-gray-600 cursor-pointer",
+        "w-full items-center gap-3 py-3 text-left bg-dark-bg hover:bg-gray-600",
         isActive && "bg-gray-700",
       )}
     >
@@ -36,6 +37,6 @@ export const ChatItem = memo(function ChatItem({
           <p className="truncate text-xs text-white/60">{chat.phone}</p>
         ) : null}
       </div>
-    </button>
+    </Button>
   );
 });

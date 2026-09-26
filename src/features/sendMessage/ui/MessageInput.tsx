@@ -1,6 +1,9 @@
 import { useState, type SubmitEvent } from "react";
+
 import { MAX_MESSAGE_LENGTH } from "@/shared/config/constants";
 import { Button, Input } from "@/shared/ui";
+import { SendIcon } from "@/shared/ui/icons";
+
 import { useSendMessage } from "../model/useSendMessage";
 
 type MessageInputProps = {
@@ -10,23 +13,24 @@ type MessageInputProps = {
 export function MessageInput({ chatId }: MessageInputProps) {
   const [text, setText] = useState("");
 
-  const { send, isSending, error } = useSendMessage(chatId);
+  const { send, error } = useSendMessage(chatId);
 
   const onSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    await send(text);
+
+    send(text);
     setText("");
   };
 
-  const disabled = !chatId || isSending;
+  const disabled = !chatId;
 
   return (
     <form
       onSubmit={onSubmit}
       className="flex flex-col gap-2 rounded-lg bg-dark-bg p-3 max-xl:mx-3"
     >
-      {error ? <p className="text-xs text-red-500">{error}</p> : null}
+      {!!error ? <p className="text-xs text-red-500">{error.message}</p> : null}
       <div className="flex gap-2">
         <Input
           className="border-none"
@@ -37,7 +41,7 @@ export function MessageInput({ chatId }: MessageInputProps) {
           disabled={disabled}
         />
         <Button type="submit" disabled={disabled || !text.trim()}>
-          {isSending ? "Отправка…" : "Отправить"}
+          <SendIcon />
         </Button>
       </div>
     </form>

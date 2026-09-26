@@ -16,8 +16,8 @@ export const ChatList = memo(function ChatList() {
   }
 
   return (
-    <>
-      <h2 className="text-white pl-4 text-medium">Чаты</h2>
+    <div className="flex flex-1 flex-col gap-2 min-h-0">
+      <h2 className="text-white pl-4 text-bold">Чаты</h2>
       <ul className="flex-1 overflow-y-auto">
         {chats.map((chat) => (
           <li key={chat.id}>
@@ -29,7 +29,7 @@ export const ChatList = memo(function ChatList() {
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 });
 

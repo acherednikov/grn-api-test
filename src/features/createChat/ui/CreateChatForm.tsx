@@ -33,7 +33,7 @@ export const CreateChatForm = memo(function CreateChatForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-2 p-4"
+      className="flex flex-col shrink-0 gap-2 p-4"
     >
       <Input
         name="phone"

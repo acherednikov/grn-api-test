@@ -5,6 +5,8 @@ import type { Message } from "./types";
 type MessageState = {
   byChatId: Record<string, Message[]>;
   appendMessage: (message: Message) => void;
+  updateMessage: (messageId: string, updates: Partial<Message>) => void;
+  removeMessage: (messageId: string) => void;
   rekeyChatMessages: (fromChatId: string, toChatId: string) => void;
   getMessagesForChat: (chatId: string) => Message[];
 };
@@ -44,6 +46,43 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           [message.chatId]: nextList,
         },
       };
+    });
+  },
+
+  updateMessage: (messageId, updates) => {
+    set((state) => {
+      const next = { ...state.byChatId };
+      for (const chatId in next) {
+        const list = next[chatId];
+        const messageIndex = list.findIndex((m) => m.id === messageId);
+        if (messageIndex !== -1) {
+          next[chatId] = [
+            ...list.slice(0, messageIndex),
+            { ...list[messageIndex], ...updates },
+            ...list.slice(messageIndex + 1),
+          ];
+          break;
+        }
+      }
+      return { byChatId: next };
+    });
+  },
+
+  removeMessage: (messageId) => {
+    set((state) => {
+      const next = { ...state.byChatId };
+      for (const chatId in next) {
+        const list = next[chatId];
+        const messageIndex = list.findIndex((m) => m.id === messageId);
+        if (messageIndex !== -1) {
+          next[chatId] = [
+            ...list.slice(0, messageIndex),
+            ...list.slice(messageIndex + 1),
+          ];
+          break;
+        }
+      }
+      return { byChatId: next };
     });
   },
 

@@ -19,7 +19,7 @@ export function MessagePanel({ className }: { className?: string }) {
       )}
     >
       {activeChat && (
-        <div className="flex items-center gap-3 bg-dark-bg px-4 py-3">
+        <div className="flex items-center gap-3 bg-dark-bg px-4 py-3 border-b border-slate-700">
           <Button
             variant="ghost"
             className="!p-1"
@@ -40,9 +40,9 @@ export function MessagePanel({ className }: { className?: string }) {
       )}
       <MessageList
         chatId={activeChat?.chatId ?? null}
-        className="mx-auto flex w-full md:max-w-[700px] flex-1 flex-col gap-2 overflow-y-auto p-4"
+        className="mx-auto flex flex-1 flex-col w-full min-h-0 gap-2 overflow-y-auto p-4 md:max-w-[700px]"
       />
-      {activeChat && <div className="mx-auto w-full md:max-w-[700px]">
+      {activeChat && <div className="mx-auto w-full shrink-0 md:max-w-[700px]">
         <MessageInput chatId={activeChat.chatId} />
       </div>}
     </main>

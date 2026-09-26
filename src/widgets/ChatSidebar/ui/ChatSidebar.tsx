@@ -27,7 +27,7 @@ export function ChatSidebar({ className }: { className?: string }) {
       <CreateChatForm />
       <ChatList />
       <Button
-        className="self-start my-4 mb-2"
+        className="self-start shrink-0 my-2 mb-2"
         variant="ghost"
         onClick={onLogout}
       >
