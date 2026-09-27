@@ -27,7 +27,7 @@ const CREDENTIALS = {
 
 const SEND_MESSAGE_URL = `/api/green/waInstance${INSTANCE_ID}/sendMessage/${API_TOKEN}`;
 
-const WAIT_OPTS = { timeout: 5000 } as const;
+const WAIT_OPTS = { timeout: 5000 };
 
 // MSW 
 
@@ -117,7 +117,7 @@ describe("useSendMessage", () => {
         expect(messages[0]).toMatchObject({
           text: MESSAGE_TEXT,
           status: MessageStatus.Pending,
-          direction: "outgoing" as const,
+          direction: "outgoing",
         });
       }, WAIT_OPTS);
     });
@@ -251,7 +251,7 @@ describe("useSendMessage", () => {
         id: "existing-msg",
         chatId: CHAT_ID,
         text: "Existing message",
-        direction: "incoming" as const,
+        direction: "incoming",
         timestamp: Date.now() - 1000,
       });
 

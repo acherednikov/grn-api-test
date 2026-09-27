@@ -18,6 +18,7 @@ export const CreateChatForm = memo(function CreateChatForm() {
     control,
     handleSubmit,
     reset,
+    formState: { isDirty },
   } = useForm<CreateChatFormValues>({
     resolver: zodResolver(createChatFormSchema),
     defaultValues: { phone: "" },
@@ -55,14 +56,14 @@ export const CreateChatForm = memo(function CreateChatForm() {
             placeholder="79991234567"
             error={fieldState.error?.message || checkAccount.error?.message}
             onChange={withErrorReset(field, resetServerError)}
-            disabled={isLoading || !field.value}
+            disabled={isLoading}
           />
         )}
       />
       <Button
         type="submit"
         className="w-full"
-        disabled={isLoading}
+        disabled={isLoading || !isDirty}
       >
         {isLoading ? <Spinner /> : "Новый чат"}
       </Button>
