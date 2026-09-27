@@ -1,6 +1,4 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { AuthPage } from "@/pages/AuthPage";
-import { ChatPage } from "@/pages/ChatPage";
 import { RequireAuth } from "./RequireAuth";
 
 export const router = createBrowserRouter([
@@ -10,14 +8,20 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <AuthPage />,
+    lazy: async () => {
+      const { AuthPage } = await import("@/pages/AuthPage");
+      return { Component: AuthPage };
+    },
   },
   {
     element: <RequireAuth />,
     children: [
       {
         path: "/chat",
-        element: <ChatPage />,
+        lazy: async () => {
+          const { ChatPage } = await import("@/pages/ChatPage");
+          return { Component: ChatPage };
+        },
       },
     ],
   },
