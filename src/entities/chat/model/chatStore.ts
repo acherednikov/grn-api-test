@@ -25,17 +25,17 @@ export const useChatStore = create<ChatState>()(
 
     addChat: (chat) => {
       const state = get();
-      const exists = state.chats.some((c) => c.chatId === chat.chatId);
+      const exists = state.chats.some((c) => c.id === chat.id);
 
       if (exists) {
-        set({ activeChatId: chat.chatId });
+        set({ activeChatId: chat.id });
 
         return { created: false };
       }
 
       set({
         chats: [chat, ...state.chats],
-        activeChatId: chat.chatId,
+        activeChatId: chat.id,
       });
 
       return { created: true };
@@ -49,7 +49,7 @@ export const useChatStore = create<ChatState>()(
       const { chats, activeChatId } = get();
       if (!activeChatId) return null;
       
-      return chats.find((c) => c.chatId === activeChatId) ?? null;
+      return chats.find((c) => c.id === activeChatId) ?? null;
     },
   }),
 );

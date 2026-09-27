@@ -36,7 +36,6 @@ export function useCreateChatSubmit(
 
       const chat: Chat = {
         id: chatId,
-        chatId,
         title,
         contactName,
         avatar,

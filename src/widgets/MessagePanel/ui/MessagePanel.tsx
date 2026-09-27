@@ -39,11 +39,11 @@ export function MessagePanel({ className }: { className?: string }) {
         </div>
       )}
       <MessageList
-        chatId={activeChat?.chatId ?? null}
+        chatId={activeChat?.id ?? null}
         className="mx-auto flex flex-1 flex-col w-full min-h-0 gap-2 overflow-y-auto p-4 md:max-w-[700px]"
       />
       {activeChat && <div className="mx-auto w-full shrink-0 md:max-w-[700px]">
-        <MessageInput chatId={activeChat.chatId} />
+        <MessageInput chatId={activeChat.id} />
       </div>}
     </main>
   );

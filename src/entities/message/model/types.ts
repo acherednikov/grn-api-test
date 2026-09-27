@@ -1,6 +1,5 @@
 export type MessageDirection = "incoming" | "outgoing";
 
-// export type MessageStatus = "pending" | "sent" | "failed";
 export enum MessageStatus {
   Pending = "pending",
   Sent = "sent",

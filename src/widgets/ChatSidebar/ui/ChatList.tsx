@@ -23,7 +23,7 @@ export const ChatList = memo(function ChatList() {
           <li key={chat.id}>
             <ChatItem
               chat={chat}
-              isActive={activeChatId === chat.chatId}
+              isActive={activeChatId === chat.id}
               onSelect={setActiveChat}
             />
           </li>

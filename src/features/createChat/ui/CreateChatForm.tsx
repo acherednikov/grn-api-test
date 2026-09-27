@@ -55,7 +55,7 @@ export const CreateChatForm = memo(function CreateChatForm() {
             placeholder="79991234567"
             error={fieldState.error?.message || checkAccount.error?.message}
             onChange={withErrorReset(field, resetServerError)}
-            disabled={isLoading}
+            disabled={isLoading || !field.value}
           />
         )}
       />

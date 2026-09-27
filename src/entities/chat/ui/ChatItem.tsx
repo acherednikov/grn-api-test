@@ -19,7 +19,7 @@ export const ChatItem = memo(function ChatItem({
   return (
     <Button
       variant="ghost"
-      onClick={() => onSelect(chat.chatId)}
+      onClick={() => onSelect(chat.id)}
       className={cn(
         "w-full items-center gap-3 py-3 text-left bg-dark-bg hover:bg-gray-700",
         isActive && "!bg-slate-800",
