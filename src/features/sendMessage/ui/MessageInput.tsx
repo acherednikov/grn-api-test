@@ -32,7 +32,7 @@ export const MessageInput = function MessageInput({ chatId }: MessageInputProps)
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-2 rounded-lg bg-dark-bg p-3 max-xl:mx-3"
+      className="flex flex-col gap-2 rounded-lg border border-slate-700 bg-dark-bg p-3 max-xl:mx-3"
     >
       {!!error ? <p className="text-xs text-red-500">{error.message}</p> : null}
       <div className="flex gap-2">

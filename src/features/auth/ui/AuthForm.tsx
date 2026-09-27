@@ -15,6 +15,7 @@ export function AuthForm() {
   const {
     control,
     handleSubmit,
+    formState: { isDirty },
   } = useForm<AuthFormValues>({
     resolver: zodResolver(authFormSchema),
     defaultValues: { idInstance: "", apiTokenInstance: "" },
@@ -66,7 +67,11 @@ export function AuthForm() {
           />
         )}
       />
-      <Button type="submit" disabled={checkInstanceState.isPending}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={checkInstanceState.isPending || !isDirty}
+      >
         {checkInstanceState.isPending ? <Spinner /> : "Вход"}
       </Button>
     </form>

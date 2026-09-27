@@ -28,7 +28,7 @@ export function Input({
       <input
         id={inputId}
         className={cn(
-          "rounded-lg border border-neutral-700 bg-dark-bg px-3 py-2 text-white outline-none focus:border-violet-500",
+          "rounded-lg border border-slate-700 bg-dark-bg px-3 py-2 text-white outline-none focus:border-violet-500",
           error && "border-red-400",
           className,
         )}

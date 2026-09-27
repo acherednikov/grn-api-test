@@ -25,7 +25,7 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "flex items-center justify-center overflow-hidden rounded-full bg-gray-800",
+        "flex items-center justify-center overflow-hidden rounded-full bg-slate-600",
         wrapperClassName,
       )}
     >
