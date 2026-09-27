@@ -11,15 +11,7 @@ type AppProvidersProps = {
 
 export function AppProviders({ children }: AppProvidersProps) {
   const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        // defaultOptions: {
-        //   queries: {
-        //     refetchOnWindowFocus: false,
-        //     retry: 1,
-        //   },
-        // },
-      }),
+    () => new QueryClient(),
   );
 
   return (

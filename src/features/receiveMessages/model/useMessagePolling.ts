@@ -6,10 +6,10 @@ import {
 } from "@/entities/message";
 import { useSessionStore } from "@/entities/session";
 import { POLL_INTERVAL_MS } from "@/shared/config/constants";
-import { ReceiveNotificationResponse } from "@/shared/api/types";
 
 import { deleteNotification } from "../api/deleteNotification";
 import { receiveNotification } from "../api/receiveNotification";
+import type { ReceiveNotificationResponse } from "../api/dto";
 
 export function useMessagePolling(enabled: boolean) {
   const credentials = useSessionStore((s) => s.credentials);

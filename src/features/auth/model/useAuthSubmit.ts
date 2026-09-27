@@ -3,10 +3,11 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import type { SubmitHandler } from "react-hook-form";
 
 import { useSessionStore } from "@/entities/session";
-import { InstanceState, type InstanceStateResponse } from "@/shared/api/types";
 
 import type { AuthFormValues } from "./schema";
 import { getInstanceStateDescription } from "../lib/getInstanceStateDescription";
+
+import { InstanceState, type InstanceStateResponse } from "../api/dto";
 
 type CheckInstanceState = UseMutationResult<
   InstanceStateResponse,

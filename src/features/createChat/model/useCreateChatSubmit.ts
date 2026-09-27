@@ -2,9 +2,9 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import type { SubmitHandler } from "react-hook-form";
 
 import { type Chat, useChatStore } from "@/entities/chat";
-import type { CheckAccountResponse, GetContactInfoResponse } from "@/shared/api/types";
 
 import type { CreateChatFormValues } from "./schema";
+import type { CheckAccountResponse, GetContactInfoResponse } from "../api/dto";
 
 export function useCreateChatSubmit(
   checkAccount: UseMutationResult<CheckAccountResponse, Error, string>,

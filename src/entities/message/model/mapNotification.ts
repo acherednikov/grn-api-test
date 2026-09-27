@@ -1,4 +1,5 @@
-import type { GreenNotificationBody } from "@/shared/api/types";
+import { MessageNotificationBody } from "@/shared/api/types";
+
 import type { Message, MessageDirection } from "./types";
 
 const WEBHOOK_DIRECTION: Record<string, MessageDirection> = {
@@ -7,7 +8,7 @@ const WEBHOOK_DIRECTION: Record<string, MessageDirection> = {
   outgoingAPIMessageReceived: "outgoing",
 };
 
-function extractText(body: GreenNotificationBody): string | undefined {
+function extractText(body: MessageNotificationBody): string | undefined {
   const data = body.messageData;
   if (!data) return undefined;
 
@@ -26,7 +27,7 @@ function extractText(body: GreenNotificationBody): string | undefined {
 
 /* Преобразует webhook GREEN-API в доменное Message или null */
 export function mapNotificationToMessage(
-  body: GreenNotificationBody,
+  body: MessageNotificationBody,
 ): Message | null {
   const direction = WEBHOOK_DIRECTION[body.typeWebhook];
 

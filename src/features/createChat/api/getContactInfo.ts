@@ -2,7 +2,9 @@ import {
   buildGreenApiUrl,
   greenApiFetch,
 } from "@/shared/api/greenApiClient";
-import type { GreenApiCredentials, GetContactInfoResponse } from "@/shared/api/types";
+import type { GreenApiCredentials } from "@/shared/api/types";
+
+import type { GetContactInfoResponse } from "./dto";
 
 export async function getContactInfo(
   credentials: GreenApiCredentials,

@@ -8,16 +8,6 @@ type MessageBubbleProps = {
   message: Message;
 };
 
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-
-  return date.toLocaleTimeString("ru-RU", { 
-    hour: "2-digit", 
-    minute: "2-digit",
-    hour12: false 
-  });
-}
-
 export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   const isOutgoing = message.direction === "outgoing";
 
@@ -55,3 +45,13 @@ export const MessageBubble = memo(function MessageBubble({ message }: MessageBub
     </div>
   );
 });
+
+function formatTime(timestamp: number): string {
+  const date = new Date(timestamp);
+
+  return date.toLocaleTimeString("ru-RU", { 
+    hour: "2-digit", 
+    minute: "2-digit",
+    hour12: false 
+  });
+}

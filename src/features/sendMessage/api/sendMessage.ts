@@ -2,11 +2,9 @@ import {
   buildGreenApiUrl,
   greenApiFetch,
 } from "@/shared/api/greenApiClient";
-import type {
-  GreenApiCredentials,
-  SendMessageRequest,
-  SendMessageResponse,
-} from "@/shared/api/types";
+import type { GreenApiCredentials } from "@/shared/api/types";
+
+import type { SendMessageRequest, SendMessageResponse } from "./dto";
 
 export async function sendMessage(
   credentials: GreenApiCredentials,

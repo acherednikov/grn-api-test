@@ -2,10 +2,9 @@ import {
   buildGreenApiUrl,
   greenApiFetch,
 } from "@/shared/api/greenApiClient";
-import type {
-  GreenApiCredentials,
-  ReceiveNotificationResponse,
-} from "@/shared/api/types";
+import type { GreenApiCredentials } from "@/shared/api/types";
+
+import type { ReceiveNotificationResponse } from "./dto";
 
 export async function receiveNotification(
   credentials: GreenApiCredentials,

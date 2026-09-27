@@ -1,17 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { useSessionStore } from "@/entities/session";
-import type { CheckAccountResponse } from "@/shared/api/types";
 
 import { checkAccount } from "../api/checkAccount";
-
-class AccountNotFoundError extends Error {
-  constructor(message = "Аккаунт MAX на этом номере не найден") {
-    super(message);
-    this.name = "AccountNotFoundError";
-    Object.setPrototypeOf(this, AccountNotFoundError.prototype);
-  }
-}
+import type { CheckAccountResponse } from "../api/dto";
 
 export function useCheckAccount() {
   const credentials = useSessionStore((s) => s.credentials);
@@ -23,7 +15,7 @@ export function useCheckAccount() {
       const data = await checkAccount(credentials, phone);
 
       if (!data.exist || !data.chatId) {
-        throw new AccountNotFoundError();
+        throw new Error("Аккаунт MAX на этом номере не найден");
       }
 
       return data;

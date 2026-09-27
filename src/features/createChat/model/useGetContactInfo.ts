@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { useSessionStore } from "@/entities/session";
-import { GetContactInfoResponse } from "@/shared/api/types";
 
 import { getContactInfo } from "../api/getContactInfo";
+import type { GetContactInfoResponse } from "../api/dto";
 
 export function useGetContactInfo() {
   const credentials = useSessionStore((s) => s.credentials);

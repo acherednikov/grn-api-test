@@ -1,5 +1,7 @@
 import { buildGreenApiUrl, greenApiFetch } from "@/shared/api/greenApiClient";
-import { GreenApiCredentials, InstanceStateResponse } from "@/shared/api/types";
+import { GreenApiCredentials } from "@/shared/api/types";
+
+import type { InstanceStateResponse } from "./dto";
 
 // https://green-api.com/v3/docs/api/account/GetStateInstance/
 

@@ -1,4 +1,4 @@
-import { InstanceState } from "@/shared/api/types";
+import { InstanceState } from "../api/dto";
 
 export type AuthFormValues = {
   idInstance: string;
