@@ -5,7 +5,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useSessionStore } from "@/entities/session";
 import { InstanceState, type InstanceStateResponse } from "@/shared/api/types";
 
-import type { AuthFormValues } from "./types";
+import type { AuthFormValues } from "./schema";
 import { getInstanceStateDescription } from "../lib/getInstanceStateDescription";
 
 type CheckInstanceState = UseMutationResult<

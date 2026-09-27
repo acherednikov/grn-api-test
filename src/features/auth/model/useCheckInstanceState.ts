@@ -4,7 +4,7 @@ import { DEFAULT_GREEN_API_URL } from "@/shared/config/constants";
 import type { InstanceStateResponse } from "@/shared/api/types";
 
 import { getInstanceState } from "../api/getInstanceState";
-import type { AuthFormValues } from "./types";
+import type { AuthFormValues } from "./schema";
 
 export function useCheckInstanceState() {
   return useMutation<InstanceStateResponse, Error, AuthFormValues>({

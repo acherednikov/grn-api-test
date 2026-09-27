@@ -2,17 +2,7 @@ import {
   buildGreenApiUrl,
   greenApiFetch,
 } from "@/shared/api/greenApiClient";
-import type { GreenApiCredentials } from "@/shared/api/types";
-
-// https://green-api.com/v3/docs/api/service/CheckAccount/
-
-export type CheckAccountResponse = {
-  exist?: boolean;
-  chatId?: string;
-  fromCache?: boolean;
-  status?: boolean;
-  reason?: string;
-};
+import type { GreenApiCredentials, CheckAccountResponse } from "@/shared/api/types";
 
 export async function checkAccount(
   credentials: GreenApiCredentials,

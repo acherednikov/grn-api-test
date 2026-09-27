@@ -13,7 +13,7 @@ function sortMessages(messages: Message[]): Message[] {
   return [...messages].sort((a, b) => a.timestamp - b.timestamp);
 }
 
-export const useMessageStore = create<MessageState>((set, get) => ({
+export const useMessageStore = create<MessageState>((set) => ({
   byChatId: {},
 
   appendMessage: (message) => {

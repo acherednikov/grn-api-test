@@ -1,58 +1,70 @@
-import { memo, useState, type SubmitEvent } from "react";
+import { memo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useChatStore } from "@/entities/chat";
-import { useSessionStore } from "@/entities/session";
 import { Button, Input, Spinner } from "@/shared/ui";
+import { withErrorReset } from "@/shared/lib/withErrorReset";
 
-import { createChatFromPhone } from "../model/createChatFromPhone";
+import {
+  createChatFormSchema,
+  type CreateChatFormValues,
+  useCheckAccount,
+  useGetContactInfo,
+  useCreateChatSubmit,
+} from "../model";
 
 export const CreateChatForm = memo(function CreateChatForm() {
-  const addChat = useChatStore((s) => s.addChat);
-  const credentials = useSessionStore((s) => s.credentials);
+  const {
+    control,
+    handleSubmit,
+    reset,
+  } = useForm<CreateChatFormValues>({
+    resolver: zodResolver(createChatFormSchema),
+    defaultValues: { phone: "" },
+  });
 
-  const [phone, setPhone] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const checkAccount = useCheckAccount();
+  const getContactInfo = useGetContactInfo();
 
-  const onSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
+  const { onSubmit } = useCreateChatSubmit(checkAccount, getContactInfo);
 
-    try {
-      const chat = await createChatFromPhone(phone, credentials);
-      if (chat) addChat(chat);
-      setPhone("");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Не удалось создать чат");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const isLoading = checkAccount.isPending;
+
+  const resetServerError = () => {
+    if (checkAccount.error) checkAccount.reset();
+  };
+
+  const handleChatCreate = async (values: CreateChatFormValues) => {
+    await onSubmit(values);
+    reset();
   };
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit(handleChatCreate)}
       className="flex flex-col shrink-0 gap-2 p-4"
+      noValidate
     >
-      <Input
+      <Controller
         name="phone"
-        label="Номер контакта"
-        placeholder="79991234567"
-        value={phone}
-        onChange={(e) => {
-          setPhone(e.target.value);
-          setError(null);
-        }}
-        error={error ?? undefined}
-        disabled={isSubmitting}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="Номер контакта"
+            placeholder="79991234567"
+            error={fieldState.error?.message || checkAccount.error?.message}
+            onChange={withErrorReset(field, resetServerError)}
+            disabled={isLoading}
+          />
+        )}
       />
       <Button
         type="submit"
         className="w-full"
-        disabled={!phone.trim() || isSubmitting}
+        disabled={isLoading}
       >
-        {isSubmitting ? <Spinner /> : "Новый чат"}
+        {isLoading ? <Spinner /> : "Новый чат"}
       </Button>
     </form>
   );

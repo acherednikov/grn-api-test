@@ -2,20 +2,7 @@ import {
   buildGreenApiUrl,
   greenApiFetch,
 } from "@/shared/api/greenApiClient";
-import type { GreenApiCredentials } from "@/shared/api/types";
-
-// https://green-api.com/v3/docs/api/service/GetContactInfo/
-
-export type GetContactInfoResponse = {
-  avatar?: string;
-  name?: string;
-  contactName?: string;
-  chatId?: string;
-  chatType?: string;
-  lastSeen?: string | null;
-  phoneNumber?: number;
-  phoneNumberTimestamp?: number;
-};
+import type { GreenApiCredentials, GetContactInfoResponse } from "@/shared/api/types";
 
 export async function getContactInfo(
   credentials: GreenApiCredentials,

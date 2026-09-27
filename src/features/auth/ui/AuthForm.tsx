@@ -2,6 +2,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button, Input, Spinner } from "@/shared/ui";
+import { withErrorReset } from "@/shared/lib/withErrorReset";
 
 import {
   authFormSchema,
@@ -9,7 +10,6 @@ import {
   useAuthSubmit,
   useCheckInstanceState,
 } from "../model";
-import { withErrorReset } from "../lib/withErrorReset";
 
 export function AuthForm() {
   const {
@@ -18,7 +18,6 @@ export function AuthForm() {
   } = useForm<AuthFormValues>({
     resolver: zodResolver(authFormSchema),
     defaultValues: { idInstance: "", apiTokenInstance: "" },
-    // mode: "onBlur",
   });
 
   const checkInstanceState = useCheckInstanceState();
