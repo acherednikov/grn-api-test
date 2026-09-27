@@ -1,90 +1,73 @@
-import { useState, type SubmitEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useSessionStore } from "@/entities/session";
 import { Button, Input, Spinner } from "@/shared/ui";
-import { DEFAULT_GREEN_API_URL } from "@/shared/config/constants";
-import { InstanceState, InstanceStateResponse } from "@/shared/api/types";
 
 import {
-  getInstanceStateDescription,
-  validateCredentials,
+  authFormSchema,
   type AuthFormValues,
-} from "../model/validateCredentials";
-import { getInstanceState } from "../api/getInstanceState";
+  useAuthSubmit,
+  useCheckInstanceState,
+} from "../model";
+import { withErrorReset } from "../lib/withErrorReset";
 
 export function AuthForm() {
-  const navigate = useNavigate();
-
-  const setCredentials = useSessionStore((s) => s.setCredentials);
-
-  const [values, setValues] = useState<AuthFormValues>({
-    idInstance: "",
-    apiTokenInstance: "",
-  });
-  const [errors, setErrors] = useState<ReturnType<typeof validateCredentials>>(
-    {},
-  );
-
-  const checkInstanceState = useMutation<InstanceStateResponse>({
-    mutationFn: () => getInstanceState({ ...values, apiUrl: DEFAULT_GREEN_API_URL }),
-    // onSettled: () => {},
+  const {
+    control,
+    handleSubmit,
+  } = useForm<AuthFormValues>({
+    resolver: zodResolver(authFormSchema),
+    defaultValues: { idInstance: "", apiTokenInstance: "" },
+    // mode: "onBlur",
   });
 
-  const onSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
-    checkInstanceState.reset();
+  const checkInstanceState = useCheckInstanceState();
 
-    const formErrors = validateCredentials(values);
-    setErrors(formErrors);
-    if (Object.keys(formErrors).length > 0) return;
+  const { onSubmit } = useAuthSubmit(checkInstanceState);
 
-    const instanceState = await checkInstanceState.mutateAsync();
-
-    if (instanceState.stateInstance === InstanceState.Authorized) {
-      setCredentials(values);
-      navigate("/chat", { replace: true });
-    }
-
-    if (instanceState.stateInstance !== InstanceState.Authorized) {
-      throw new Error(getInstanceStateDescription(instanceState.stateInstance));
-    }
+  const resetServerError = () => {
+    if (checkInstanceState.error) checkInstanceState.reset();
   };
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-dark-bg p-6 shadow-sm"
+      noValidate
     >
-      {checkInstanceState.error && <p className="text-red-500 font-semibold text-center">
-        {checkInstanceState.error.message}
-      </p>}
-      <Input
+      {checkInstanceState.error && (
+        <p className="text-red-500 font-semibold text-center">
+          {checkInstanceState.error.message}
+        </p>
+      )}
+      <Controller
         name="idInstance"
-        label="ID инстанса (idInstance)"
-        value={values.idInstance}
-        onChange={(e) =>
-          setValues((v) => ({ ...v, idInstance: e.target.value }))
-        }
-        error={errors.idInstance}
-        autoComplete="off"
+        control={control}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="ID инстанса (idInstance)"
+            autoComplete="off"
+            error={fieldState.error?.message}
+            onChange={withErrorReset(field, resetServerError)}
+          />
+        )}
       />
-      <Input
+      <Controller
         name="apiTokenInstance"
-        label="API-токен (apiTokenInstance)"
-        type="password"
-        value={values.apiTokenInstance}
-        onChange={(e) =>
-          setValues((v) => ({ ...v, apiTokenInstance: e.target.value }))
-        }
-        error={errors.apiTokenInstance}
-        autoComplete="off"
+        control={control}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="API-токен (apiTokenInstance)"
+            type="password"
+            autoComplete="off"
+            error={fieldState.error?.message}
+            onChange={withErrorReset(field, resetServerError)}
+          />
+        )}
       />
-      <Button
-        type="submit"
-        disabled={checkInstanceState.isPending}
-      >
+      <Button type="submit" disabled={checkInstanceState.isPending}>
         {checkInstanceState.isPending ? <Spinner /> : "Вход"}
       </Button>
     </form>
