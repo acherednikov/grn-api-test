@@ -1,5 +1,18 @@
 /** Сырые DTO GREEN-API (упрощённо; расширить при реализации) */
 
+export enum InstanceState {
+  NotAuthorized = 'notAuthorized',
+  Authorized = 'authorized',
+  Blocked = 'blocked',
+  Starting = 'starting',
+  Suspended = 'suspended',
+  PendingPassword = 'pendingPassword',
+}
+
+export type InstanceStateResponse = {
+  stateInstance: InstanceState;
+}
+
 export type GreenApiCredentials = {
   idInstance: string;
   apiTokenInstance: string;

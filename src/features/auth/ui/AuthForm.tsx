@@ -1,16 +1,18 @@
 import { useState, type SubmitEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 import { useSessionStore } from "@/entities/session";
-import { Button, Input } from "@/shared/ui";
+import { Button, Input, Spinner } from "@/shared/ui";
 import { DEFAULT_GREEN_API_URL } from "@/shared/config/constants";
+import { InstanceState, InstanceStateResponse } from "@/shared/api/types";
 
 import {
+  getInstanceStateDescription,
   validateCredentials,
   type AuthFormValues,
 } from "../model/validateCredentials";
-
-// TODO: валидация инстанса через https://green-api.com/v3/docs/api/account/GetStateInstance/
+import { getInstanceState } from "../api/getInstanceState";
 
 export function AuthForm() {
   const navigate = useNavigate();
@@ -20,20 +22,34 @@ export function AuthForm() {
   const [values, setValues] = useState<AuthFormValues>({
     idInstance: "",
     apiTokenInstance: "",
-    apiUrl: DEFAULT_GREEN_API_URL,
   });
   const [errors, setErrors] = useState<ReturnType<typeof validateCredentials>>(
     {},
   );
 
-  const onSubmit = (e: SubmitEvent) => {
-    e.preventDefault();
-    const nextErrors = validateCredentials(values);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+  const checkInstanceState = useMutation<InstanceStateResponse>({
+    mutationFn: () => getInstanceState({ ...values, apiUrl: DEFAULT_GREEN_API_URL }),
+    // onSettled: () => {},
+  });
 
-    setCredentials(values);
-    navigate("/chat", { replace: true });
+  const onSubmit = async (e: SubmitEvent) => {
+    e.preventDefault();
+    checkInstanceState.reset();
+
+    const formErrors = validateCredentials(values);
+    setErrors(formErrors);
+    if (Object.keys(formErrors).length > 0) return;
+
+    const instanceState = await checkInstanceState.mutateAsync();
+
+    if (instanceState.stateInstance === InstanceState.Authorized) {
+      setCredentials(values);
+      navigate("/chat", { replace: true });
+    }
+
+    if (instanceState.stateInstance !== InstanceState.Authorized) {
+      throw new Error(getInstanceStateDescription(instanceState.stateInstance));
+    }
   };
 
   return (
@@ -41,7 +57,9 @@ export function AuthForm() {
       onSubmit={onSubmit}
       className="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-dark-bg p-6 shadow-sm"
     >
-      <p className="text-white font-semibold text-center">Убедитесь, что ваш инстанс авторизован</p>
+      {checkInstanceState.error && <p className="text-red-500 font-semibold text-center">
+        {checkInstanceState.error.message}
+      </p>}
       <Input
         name="idInstance"
         label="ID инстанса (idInstance)"
@@ -63,7 +81,12 @@ export function AuthForm() {
         error={errors.apiTokenInstance}
         autoComplete="off"
       />
-      <Button type="submit">Вход</Button>
+      <Button
+        type="submit"
+        disabled={checkInstanceState.isPending}
+      >
+        {checkInstanceState.isPending ? <Spinner /> : "Вход"}
+      </Button>
     </form>
   );
 }
