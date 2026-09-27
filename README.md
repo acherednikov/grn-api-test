@@ -2,12 +2,30 @@
 
 React + Vite + TypeScript, архитектура FSD light.
 
+🔗 **Live Demo:** [grn-api-test.vercel.app](https://grn-api-test.vercel.app/)
+
 ## Запуск
 
 ```bash
 npm install
 npm run dev
 ```
+
+## Конфигурация
+
+Для настройки параметров приложения создайте файл `.env` на основе `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Доступные переменные окружения:
+
+- `VITE_GREEN_API_URL` — базовый URL GREEN-API (по умолчанию: `https://api.green-api.com`)
+- `VITE_POLL_INTERVAL_MS` — интервал опроса уведомлений в мс (по умолчанию: `8000`)
+- `VITE_MAX_MESSAGE_LENGTH` — максимальная длина сообщения (по умолчанию: `4000`)
+
+После изменения `.env` перезапустите dev-сервер.
 
 ## Структура `src/`
 
