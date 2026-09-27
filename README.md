@@ -19,3 +19,23 @@ npm run dev
 - `shared/` — GREEN-API client, UI-kit, утилиты
 
 В dev запросы к GREEN-API проксируются через `/api/green` (см. `vite.config.ts`).
+
+## Используемые библиотеки
+
+### Основные зависимости
+- **React 19**
+- **TypeScript 5.7**
+- **Vite 6**
+  **React Router DOM 7**
+
+### Управление состоянием
+- **Zustand 5**
+- **TanStack Query 5**
+
+### Формы и валидация
+- **React Hook Form 7**
+- **Zod 4**
+- **@hookform/resolvers**
+
+### Стилизация
+- **Tailwind CSS 4**
