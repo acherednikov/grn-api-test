@@ -24,8 +24,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'auth-page': ['./src/pages/AuthPage'],
-          'chat-page': ['./src/pages/ChatPage'],
+          'auth-page': ['./src/pages/AuthPage/index.ts'],
+          'chat-page': ['./src/pages/ChatPage/index.ts'],
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         },
       },
@@ -34,6 +34,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: [],
+    setupFiles: ["./vitest.setup.ts"],
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    css: false,
   },
 });
