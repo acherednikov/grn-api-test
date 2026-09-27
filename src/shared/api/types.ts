@@ -20,29 +20,30 @@ export type ReceiveNotificationResponse = {
   body: GreenNotificationBody;
 } | null;
 
+// https://green-api.com/v3/docs/api/receiving/notifications-format/incoming-message/TextMessage/
 export type GreenNotificationBody = {
   typeWebhook: string;
-  instanceData?: {
+  instanceData: {
     idInstance: number;
     wid: string;
     typeInstance: string;
   };
-  timestamp?: number;
-  idMessage?: string;
-  senderData?: {
+  timestamp: number;
+  idMessage: string;
+  senderData: {
     chatId: string;
+    chatType: string;
     chatName?: string;
-    chatType?: string;
     sender: string;
+    senderType: string;
     senderName?: string;
-    senderType?: string;
     senderContactName?: string;
-    senderPhoneNumber?: number | string;
+    senderPhoneNumber: number | string;
   };
   messageData?: {
     typeMessage: string;
     isForwarded?: boolean;
-    textMessageData?: {
+    textMessageData: {
       textMessage: string;
     };
     extendedTextMessageData?: {

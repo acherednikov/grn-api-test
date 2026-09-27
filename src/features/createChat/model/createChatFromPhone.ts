@@ -1,6 +1,5 @@
 import type { Chat } from "@/entities/chat";
 import type { SessionCredentials } from "@/entities/session";
-import { phoneToChatId } from "@/shared/lib/formatPhone";
 
 import { checkAccount } from "../api/checkAccount";
 import { getContactInfo } from "../api/getContactInfo";
@@ -11,37 +10,30 @@ function digitsOnly(value: string): string {
 }
 
 /**
- * Создаёт чат по номеру.
- * Через CheckAccount получает MAX user id (например "105456231"),
- * иначе fallback на формат phone@c.us.
+ * Создаёт чат по номеру телефона.
+ * Через CheckAccount получает MAX chatId (например "105456231"),
  * После получения chatId подтягивает аватар и имя контакта через GetContactInfo.
  */
 export async function createChatFromPhone(
   phone: string,
   credentials: SessionCredentials | null,
-): Promise<Chat> {
+): Promise<Chat | null> {
   const digits = digitsOnly(phone);
   if (!digits) {
     throw new Error("Укажите номер телефона");
   }
 
-  let chatId = phoneToChatId(digits);
+  let chatId: string | undefined;
   let contactName: string | undefined;
   let avatar: string | undefined;
 
   if (credentials) {
-    try {
-      const result = await checkAccount(credentials, digits);
-      if (result.exist && result.chatId) {
-        chatId = result.chatId;
-      } else if (result.exist === false) {
-        throw new AccountNotFoundError();
-      }
-    } catch (e) {
-      if (e instanceof AccountNotFoundError) {
-        throw e;
-      }
-      // CheckAccount недоступен — оставляем phone@c.us, свяжем позже по уведомлению
+    const result = await checkAccount(credentials, digits);
+
+    if (result.exist && result.chatId) {
+      chatId = result.chatId;
+    } else {
+      throw new AccountNotFoundError();
     }
 
     try {
@@ -51,17 +43,19 @@ export async function createChatFromPhone(
     } catch {
       // GetContactInfo недоступен — оставляем без аватара и имени
     }
+
+    const title = contactName || digits;
+
+    return {
+      id: chatId,
+      chatId,
+      title,
+      contactName,
+      avatar,
+      phone: digits,
+      createdAt: Date.now(),
+    };
   }
 
-  const title = contactName || digits;
-
-  return {
-    id: chatId,
-    chatId,
-    title,
-    contactName,
-    avatar,
-    phone: digits,
-    createdAt: Date.now(),
-  };
+  return null;
 }

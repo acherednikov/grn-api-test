@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from "react";
+import { useState,  type SubmitEvent, type ChangeEvent } from "react";
 
 import { MAX_MESSAGE_LENGTH } from "@/shared/config/constants";
 import { Button, Input } from "@/shared/ui";
@@ -10,10 +10,14 @@ type MessageInputProps = {
   chatId: string | null;
 };
 
-export function MessageInput({ chatId }: MessageInputProps) {
+export const MessageInput = function MessageInput({ chatId }: MessageInputProps) {
   const [text, setText] = useState("");
 
   const { send, error } = useSendMessage(chatId);
+
+  const onMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+  };
 
   const onSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -37,7 +41,7 @@ export function MessageInput({ chatId }: MessageInputProps) {
           placeholder={chatId ? "Сообщение…" : "Выберите чат"}
           value={text}
           maxLength={MAX_MESSAGE_LENGTH}
-          onChange={(e) => setText(e.target.value)}
+          onChange={onMessageChange}
           disabled={disabled}
         />
         <Button type="submit" disabled={disabled || !text.trim()}>

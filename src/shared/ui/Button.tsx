@@ -22,6 +22,8 @@ export function Button({
           "bg-violet-500 text-white hover:bg-violet-600",
         variant === "ghost" &&
           "bg-transparent text-violet-500 hover:text-white",
+        props.disabled &&
+          "!cursor-not-allowed",
         className,
       )}
       {...props}

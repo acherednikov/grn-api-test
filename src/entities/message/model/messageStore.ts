@@ -7,8 +7,6 @@ type MessageState = {
   appendMessage: (message: Message) => void;
   updateMessage: (messageId: string, updates: Partial<Message>) => void;
   removeMessage: (messageId: string) => void;
-  rekeyChatMessages: (fromChatId: string, toChatId: string) => void;
-  getMessagesForChat: (chatId: string) => Message[];
 };
 
 function sortMessages(messages: Message[]): Message[] {
@@ -52,6 +50,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   updateMessage: (messageId, updates) => {
     set((state) => {
       const next = { ...state.byChatId };
+
       for (const chatId in next) {
         const list = next[chatId];
         const messageIndex = list.findIndex((m) => m.id === messageId);
@@ -64,6 +63,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           break;
         }
       }
+
       return { byChatId: next };
     });
   },
@@ -71,6 +71,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   removeMessage: (messageId) => {
     set((state) => {
       const next = { ...state.byChatId };
+
       for (const chatId in next) {
         const list = next[chatId];
         const messageIndex = list.findIndex((m) => m.id === messageId);
@@ -82,49 +83,8 @@ export const useMessageStore = create<MessageState>((set, get) => ({
           break;
         }
       }
+      
       return { byChatId: next };
     });
   },
-
-  /**
-   * Переносит сообщения из одного ключа чата в другой.
-   * Используется когда чат был создан с временным chatId (phone@c.us,
-   * если CheckAccount не сработал), а потом пришло уведомление с
-   * настоящим MAX chatId — сообщения, накопившиеся под старым ключом,
-   * перекладываем под новый, объединяя/дедуплицируя с теми, что уже
-   * могли попасть под новый ключ.
-   */
-  rekeyChatMessages: (fromChatId, toChatId) => {
-    if (fromChatId === toChatId) return;
-
-    set((state) => {
-      const fromList = state.byChatId[fromChatId] ?? [];
-      // Ничего не было по старому ключу — состояние не меняем
-      if (fromList.length === 0 && !(fromChatId in state.byChatId)) {
-        return state;
-      }
-
-      const toList = state.byChatId[toChatId] ?? [];
-      // Перезаписываем chatId у перемещаемых сообщений, сливаем с теми,
-      // что уже есть в toList, сортируем и убираем дубликаты по id/idMessage
-      const merged = sortMessages([
-        ...toList,
-        ...fromList.map((m) => ({ ...m, chatId: toChatId })),
-      ]).filter(
-        (m, index, arr) =>
-          arr.findIndex(
-            (x) =>
-              x.id === m.id ||
-              (x.idMessage && m.idMessage && x.idMessage === m.idMessage),
-          ) === index,
-      );
-
-      const next = { ...state.byChatId };
-      delete next[fromChatId];
-      next[toChatId] = merged;
-      return { byChatId: next };
-    });
-  },
-
-  getMessagesForChat: (chatId) => get().byChatId[chatId] ?? [],
 }));

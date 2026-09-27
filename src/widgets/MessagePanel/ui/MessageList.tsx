@@ -9,7 +9,7 @@ type MessageListProps = {
 
 export function MessageList({ chatId, className }: MessageListProps) {
   const messages = useMessageStore(
-    (s) => chatId ? s.byChatId[chatId] : EMPTY_MESSAGES,
+    (s) => chatId ? (s.byChatId[chatId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES,
   );
 
   return (

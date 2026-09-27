@@ -21,9 +21,8 @@ export const ChatItem = memo(function ChatItem({
       variant="ghost"
       onClick={() => onSelect(chat.chatId)}
       className={cn(
-        // "flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-white bg-dark-bg hover:bg-gray-600 cursor-pointer",
-        "w-full items-center gap-3 py-3 text-left bg-dark-bg hover:bg-gray-600",
-        isActive && "bg-gray-700",
+        "w-full items-center gap-3 py-3 text-left bg-dark-bg hover:bg-gray-700",
+        isActive && "!bg-slate-800",
       )}
     >
       <Avatar

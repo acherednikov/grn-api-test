@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { useChatStore } from "@/entities/chat";
 import {
   mapNotificationToMessage,
   useMessageStore,
@@ -14,12 +13,7 @@ import { receiveNotification } from "../api/receiveNotification";
 
 export function useMessagePolling(enabled: boolean) {
   const credentials = useSessionStore((s) => s.credentials);
-
   const appendMessage = useMessageStore((s) => s.appendMessage);
-  const rekeyChatMessages = useMessageStore((s) => s.rekeyChatMessages);
-  const resolveChatFromNotification = useChatStore(
-    (s) => s.resolveChatFromNotification,
-  );
 
   return useQuery({
     queryKey: ["green-api", "notifications", credentials?.idInstance],
@@ -50,26 +44,10 @@ export function useMessagePolling(enabled: boolean) {
 
         // Обрабатываем уведомление для записи в стор message
         try {
-          const mapped = mapNotificationToMessage(notification.body);
+          const mappedMessage = mapNotificationToMessage(notification.body);
 
-          if (mapped) {
-            const sender = notification.body.senderData;
-
-            const resolved = resolveChatFromNotification({
-              chatId: mapped.chatId,
-              title: sender?.chatName || sender?.senderName,
-              phone:
-                sender?.senderPhoneNumber !== undefined
-                  ? String(sender.senderPhoneNumber)
-                  : undefined,
-            });
-
-            if (resolved) {
-              if (resolved.previousChatId) {
-                rekeyChatMessages(resolved.previousChatId, resolved.chatId);
-              }
-              appendMessage({ ...mapped, chatId: resolved.chatId });
-            }
+          if (mappedMessage) {
+            appendMessage(mappedMessage);
           }
         } catch (_error) {
           // Ошибка парсинга или обновления стора

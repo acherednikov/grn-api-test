@@ -2,7 +2,7 @@ import { memo, useState, type SubmitEvent } from "react";
 
 import { useChatStore } from "@/entities/chat";
 import { useSessionStore } from "@/entities/session";
-import { Button, Input } from "@/shared/ui";
+import { Button, Input, Spinner } from "@/shared/ui";
 
 import { createChatFromPhone } from "../model/createChatFromPhone";
 
@@ -21,10 +21,10 @@ export const CreateChatForm = memo(function CreateChatForm() {
 
     try {
       const chat = await createChatFromPhone(phone, credentials);
-      addChat(chat);
+      if (chat) addChat(chat);
       setPhone("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Не удалось создать чат");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,7 +52,7 @@ export const CreateChatForm = memo(function CreateChatForm() {
         className="w-full"
         disabled={!phone.trim() || isSubmitting}
       >
-        {isSubmitting ? "Проверка…" : "Новый чат"}
+        {isSubmitting ? <Spinner /> : "Новый чат"}
       </Button>
     </form>
   );
