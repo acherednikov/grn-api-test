@@ -1,7 +1,7 @@
-import { useChatStore } from "@/entities/chat";
-import { ChatSidebar } from "@/widgets/ChatSidebar";
-import { MessagePanel } from "@/widgets/MessagePanel";
-import { useMessagePolling } from "@/features/receiveMessages";
+import { useChatStore } from "@/entities/chat/model/chatStore";
+import { ChatSidebar } from "@/widgets/ChatSidebar/ui/ChatSidebar";
+import { MessagePanel } from "@/widgets/MessagePanel/ui/MessagePanel";
+import { useMessagePolling } from "@/features/receiveMessages/model/useMessagePolling";
 
 export function ChatPage() {
   const hasActiveChat = useChatStore((s) => s.activeChatId !== null);

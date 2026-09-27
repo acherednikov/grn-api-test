@@ -4,7 +4,7 @@ import {
 } from "@/shared/api/greenApiClient";
 import type { GreenApiCredentials } from "@/shared/api/types";
 
-import type { ReceiveNotificationResponse } from "./dto";
+import type { ReceiveNotificationResponse } from "./dto/types";
 
 export async function receiveNotification(
   credentials: GreenApiCredentials,

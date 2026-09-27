@@ -1,15 +1,14 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button, Input, Spinner } from "@/shared/ui";
+import { Button } from "@/shared/ui/Button";
+import { Input } from "@/shared/ui/Input";
+import { Spinner } from "@/shared/ui/Spinner";
 import { withErrorReset } from "@/shared/lib/withErrorReset";
 
-import {
-  authFormSchema,
-  type AuthFormValues,
-  useAuthSubmit,
-  useCheckInstanceState,
-} from "../model";
+import { authFormSchema, type AuthFormValues } from "../model/schema";
+import { useAuthSubmit } from "../model/useAuthSubmit";
+import { useCheckInstanceState } from "../model/useCheckInstanceState";
 
 export function AuthForm() {
   const {

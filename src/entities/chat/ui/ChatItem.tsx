@@ -1,7 +1,8 @@
 import { memo } from "react";
 
 import { cn } from "@/shared/lib/cn";
-import { Avatar, Button } from "@/shared/ui";
+import { Avatar } from "@/shared/ui/Avatar";
+import { Button } from "@/shared/ui/Button";
 
 import type { Chat } from "../model/types";
 

@@ -1,8 +1,9 @@
-import { useChatStore } from "@/entities/chat";
-import { MessageInput } from "@/features/sendMessage";
+import { useChatStore } from "@/entities/chat/model/chatStore";
+import { MessageInput } from "@/features/sendMessage/ui/MessageInput";
 import { cn } from "@/shared/lib/cn";
-import { Button, Avatar } from "@/shared/ui";
-import { BackIcon } from "@/shared/ui/icons";
+import { Avatar } from "@/shared/ui/Avatar";
+import { Button } from "@/shared/ui/Button";
+import { BackIcon } from "@/shared/ui/icons/BackIcon";
 
 import { MessageList } from "./MessageList";
 

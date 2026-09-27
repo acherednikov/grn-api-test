@@ -24,8 +24,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'auth-page': ['./src/pages/AuthPage/index.ts'],
-          'chat-page': ['./src/pages/ChatPage/index.ts'],
+          'auth-page': ['./src/pages/AuthPage/ui/AuthPage.tsx'],
+          'chat-page': ['./src/pages/ChatPage/ui/ChatPage.tsx'],
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         },
       },

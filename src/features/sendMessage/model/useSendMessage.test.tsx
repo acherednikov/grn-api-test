@@ -6,11 +6,12 @@ import { setupServer } from "msw/node";
 import React from "react";
 
 import { DEFAULT_GREEN_API_URL } from "@/shared/config/constants";
-import { useSessionStore } from "@/entities/session";
-import { MessageStatus, useMessageStore } from "@/entities/message";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
+import { MessageStatus } from "@/entities/message/model/types";
+import { useMessageStore } from "@/entities/message/model/messageStore";
 
 import { useSendMessage } from "./useSendMessage";
-import { SendMessageResponse } from "../api/dto";
+import { SendMessageResponse } from "../api/dto/types";
 
 // Константы
 

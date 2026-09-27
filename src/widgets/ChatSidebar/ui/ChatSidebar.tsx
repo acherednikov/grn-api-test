@@ -1,11 +1,11 @@
-import { CreateChatForm } from "@/features/createChat";
+import { CreateChatForm } from "@/features/createChat/ui/CreateChatForm";
 import { cn } from "@/shared/lib/cn";
 
 import { ChatList } from "./ChatList";
-import { LogoutIcon } from "@/shared/ui/icons";
-import { Button } from "@/shared/ui";
+import { LogoutIcon } from "@/shared/ui/icons/LogoutIcon";
+import { Button } from "@/shared/ui/Button";
 import { useNavigate } from "react-router-dom";
-import { useSessionStore } from "@/entities/session";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
 
 export function ChatSidebar({ className }: { className?: string }) {
    const navigate = useNavigate();

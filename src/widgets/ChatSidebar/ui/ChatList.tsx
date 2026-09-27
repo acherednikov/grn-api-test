@@ -1,6 +1,7 @@
 import { memo } from "react";
 
-import { ChatItem, useChatStore } from "@/entities/chat";
+import { useChatStore } from "@/entities/chat/model/chatStore";
+import { ChatItem } from "@/entities/chat/ui/ChatItem";
 
 export const ChatList = memo(function ChatList() {
   const chats = useChatStore((s) => s.chats);

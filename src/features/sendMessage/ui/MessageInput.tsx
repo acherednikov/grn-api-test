@@ -1,8 +1,9 @@
 import { useState,  type SubmitEvent, type ChangeEvent } from "react";
 
 import { MAX_MESSAGE_LENGTH } from "@/shared/config/constants";
-import { Button, Input } from "@/shared/ui";
-import { SendIcon } from "@/shared/ui/icons";
+import { Button } from "@/shared/ui/Button";
+import { Input } from "@/shared/ui/Input";
+import { SendIcon } from "@/shared/ui/icons/SendIcon";
 
 import { useSendMessage } from "../model/useSendMessage";
 

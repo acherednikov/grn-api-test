@@ -1,4 +1,6 @@
-import { MessageBubble, useMessageStore, type Message } from "@/entities/message";
+import type { Message } from "@/entities/message/model/types";
+import { useMessageStore } from "@/entities/message/model/messageStore";
+import { MessageBubble } from "@/entities/message/ui/MessageBubble";
 
 const EMPTY_MESSAGES: Message[] = [];
 

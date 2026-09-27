@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { SubmitHandler } from "react-hook-form";
 
-import { useSessionStore } from "@/entities/session";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
 
 import type { AuthFormValues } from "./schema";
 import { getInstanceStateDescription } from "../lib/getInstanceStateDescription";
 
-import { InstanceState, type InstanceStateResponse } from "../api/dto";
+import { InstanceState, type InstanceStateResponse } from "../api/dto/types";
 
 type CheckInstanceState = UseMutationResult<
   InstanceStateResponse,

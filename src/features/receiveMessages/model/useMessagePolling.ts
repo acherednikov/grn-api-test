@@ -1,15 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 
-import {
-  mapNotificationToMessage,
-  useMessageStore,
-} from "@/entities/message";
-import { useSessionStore } from "@/entities/session";
+import { mapNotificationToMessage } from "@/entities/message/model/mapNotification";
+import { useMessageStore } from "@/entities/message/model/messageStore";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
 import { POLL_INTERVAL_MS } from "@/shared/config/constants";
 
 import { deleteNotification } from "../api/deleteNotification";
 import { receiveNotification } from "../api/receiveNotification";
-import type { ReceiveNotificationResponse } from "../api/dto";
+import type { ReceiveNotificationResponse } from "../api/dto/types";
 
 export function useMessagePolling(enabled: boolean) {
   const credentials = useSessionStore((s) => s.credentials);

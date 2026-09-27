@@ -4,7 +4,7 @@ import {
 } from "@/shared/api/greenApiClient";
 import type { GreenApiCredentials } from "@/shared/api/types";
 
-import type { SendMessageRequest, SendMessageResponse } from "./dto";
+import type { SendMessageRequest, SendMessageResponse } from "./dto/types";
 
 export async function sendMessage(
   credentials: GreenApiCredentials,

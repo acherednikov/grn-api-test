@@ -4,7 +4,7 @@ import {
 } from "@/shared/api/greenApiClient";
 import type { GreenApiCredentials } from "@/shared/api/types";
 
-import type { GetContactInfoResponse } from "./dto";
+import type { GetContactInfoResponse } from "./dto/types";
 
 export async function getContactInfo(
   credentials: GreenApiCredentials,

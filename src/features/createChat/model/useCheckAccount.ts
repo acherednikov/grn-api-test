@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { useSessionStore } from "@/entities/session";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
 
 import { checkAccount } from "../api/checkAccount";
-import type { CheckAccountResponse } from "../api/dto";
+import type { CheckAccountResponse } from "../api/dto/types";
 
 export function useCheckAccount() {
   const credentials = useSessionStore((s) => s.credentials);

@@ -6,12 +6,12 @@ import { setupServer } from "msw/node";
 import React from "react";
 
 import { DEFAULT_GREEN_API_URL, POLL_INTERVAL_MS } from "@/shared/config/constants";
-import { useSessionStore } from "@/entities/session";
-import { useMessageStore } from "@/entities/message";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
+import { useMessageStore } from "@/entities/message/model/messageStore";
 import type { MessageNotificationBody } from "@/shared/api/types";
 
 import { useMessagePolling } from "./useMessagePolling";
-import type { ReceiveNotificationResponse } from "../api/dto";
+import type { ReceiveNotificationResponse } from "../api/dto/types";
 
 // Константы
 

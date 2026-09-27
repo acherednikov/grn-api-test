@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useSessionStore } from "@/entities/session";
+import { useSessionStore } from "@/entities/session/model/sessionStore";
 
 export function RequireAuth() {
   const authenticated = useSessionStore((s) => s.isAuthenticated());

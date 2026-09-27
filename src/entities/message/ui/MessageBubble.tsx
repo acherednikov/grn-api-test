@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { cn } from "@/shared/lib/cn";
-import { Spinner } from "@/shared/ui";
+import { Spinner } from "@/shared/ui/Spinner";
 
 import { MessageStatus, type Message } from "../model/types";
 

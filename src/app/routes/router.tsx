@@ -9,7 +9,7 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     lazy: async () => {
-      const { AuthPage } = await import("@/pages/AuthPage");
+      const { AuthPage } = await import("@/pages/AuthPage/ui/AuthPage");
       return { Component: AuthPage };
     },
   },
@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       {
         path: "/chat",
         lazy: async () => {
-          const { ChatPage } = await import("@/pages/ChatPage");
+          const { ChatPage } = await import("@/pages/ChatPage/ui/ChatPage");
           return { Component: ChatPage };
         },
       },
