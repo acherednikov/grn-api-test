@@ -1,14 +1,66 @@
+/**
+ * @file chatStore.ts
+ * @description Zustand-хранилище (store) сущности «чат»: управляет списком всех
+ *              открытых пользователем чатов и отслеживает **один активный чат**,
+ *              который в данный момент отображается в панели сообщений UI.
+ *
+ *              Состав публичного API:
+ *                • addChat         — зарегистрировать чат + автоматически сделать
+ *                                    его активным (idem-потентно: при повторном
+ *                                    добавлении существующего чата триггерится
+ *                                    только переключение activeChatId).
+ *                • setActiveChat   — явно назначить активный чат по `id`.
+ *                • clearActiveChat — сбросить активный чат в `null` (пустая
+ *                                    правая панель).
+ *                • getActiveChat   — синхронная функция-геттер, возвращающая
+ *                                    полный объект `Chat` активного чата
+ *                                    или `null`.
+ *
+ *              Инварианты реализации:
+ *                • Иммутабельные обновления; early-return исходного state-ссылки
+ *                  при отсутствии видимых изменений → лишние ререндеры
+ *                  подписчиков Zustand не возникают.
+ *                • Новые чаты вставляются prepend-ом в начало `chats` (свежие
+ *                  сверху) — соответствует порядку в сайдбаре.
+ *                • Поиск чата — линейный `find`/`some`; в домене чатов
+ *                  N редко превышает несколько сотен, поэтому создание
+ *                  дополнительного `Map` индекса считается преждевременной
+ *                  оптимизацией.
+ *
+ * @see Chat      — доменная модель чата (./types.ts).
+ * @see ChatState — тип-схема стора (определён ниже).
+ */
+
 import { create } from "zustand";
 
 import type { Chat } from "./types";
 
+/* -------------------------------------------------------------------------- */
+/*                                  Типы                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Тег-результат работы `addChat`: был ли чат только что создан,
+ * или он уже присутствовал в коллекции (в этом случае обновлён только
+ * `activeChatId`).
+ *
+ * @property created  `true` — чат добавлен впервые,
+ *                    `false` — дубликат; список `chats` не изменился.
+ */
 type AddChatResult = { created: boolean };
 
-export type ResolveChatResult = {
-  chatId: string;
-  previousChatId: string | null;
-};
-
+/**
+ * Схема Zustand-хранилища чатов.
+ *
+ * @property chats           Массив всех известных чатов. Порядок важен для UI:
+ *                           новые чаты добавляются в начало (prepend).
+ * @property activeChatId    `id` выбранного пользователем чата или `null`,
+ *                           если ни один чат не открыт.
+ * @property addChat         Добавить чат (если новый) и сделать его активным.
+ * @property setActiveChat   Выбрать активный чат по идентификатору.
+ * @property clearActiveChat Сбросить выбор активного чата.
+ * @property getActiveChat   Получить доменный объект активного чата (синхронно).
+ */
 type ChatState = {
   chats: Chat[];
   activeChatId: string | null;
@@ -18,38 +70,139 @@ type ChatState = {
   getActiveChat: () => Chat | null;
 };
 
-export const useChatStore = create<ChatState>()(
-  (set, get) => ({
-    chats: [],
-    activeChatId: null,
+/* -------------------------------------------------------------------------- */
+/*                           Экспортируемый стор                              */
+/* -------------------------------------------------------------------------- */
 
-    addChat: (chat) => {
-      const state = get();
-      const exists = state.chats.some((c) => c.id === chat.id);
+/**
+ * Глобальный Zustand-хук для работы со стором чатов.
+ * Использование в компонентах:
+ * ```
+ *   const chats          = useChatStore(s => s.chats);
+ *   const activeChatId   = useChatStore(s => s.activeChatId);
+ *   const addChat        = useChatStore(s => s.addChat);
+ *   const setActiveChat  = useChatStore(s => s.setActiveChat);
+ * ```
+ */
+export const useChatStore = create<ChatState>((set, get) => ({
+  /* --------------- Начальное состояние --------------- */
 
-      if (exists) {
-        set({ activeChatId: chat.id });
+  /** При старте приложения нет ни одного чата и активного выбора. */
+  chats: [],
+  activeChatId: null,
 
+  /* ---------------- addChat ---------------- */
+
+  /**
+   * Добавить чат в коллекцию (если новый) и назначить его активным.
+   *
+   * Семантика «создать ИЛИ выбрать существующий»:
+   *  • Новый чат → prepend в `chats` + выставить `activeChatId = chat.id`.
+   *  • Существующий чат → только переключить `activeChatId` на этот `id`,
+   *    массив `chats` не трогать.
+   *
+   * Оптимизации:
+   *  • В обеих ветках выполняется **один атомарный `set()`** — два отдельных
+   *    вызова `set` (как было раньше) генерировали бы два лишних ререндера.
+   *  • Если существующий чат **уже активен** — возвращаем исходную ссылку
+   *    `state` без какого-либо обновления.
+   *
+   * @param chat  Доменная сущность чата с обязательным полем `id`.
+   * @returns     `{ created: true }` если чат добавлен впервые,
+   *              `{ created: false }` если дубликат (массив `chats` неизменён).
+   */
+  addChat: (chat) => {
+    const { chats, activeChatId } = get();
+    const exists = chats.some((c) => c.id === chat.id);
+
+    if (exists) {
+      // Чат уже есть — обновлять `chats` не требуется. Если он и так активен —
+      // делаем no-op, чтобы не триггерить ререндер без необходимости.
+      if (activeChatId === chat.id) {
+        // Оставляем state без изменений. Zustand setState в функциональной форме
+        // без возврата изменений не используется — используем пустой update,
+        // но возвращаем результат: «не создан, т.к. уже есть».
+        // Вызываем set({}) с тем же значением для совместимости по сигнатуре
+        // результата (возврат `{ created: false }` остаётся консистентным).
+        // На самом деле, если activeChatId уже chat.id, сетить ничего не нужно.
         return { created: false };
       }
 
-      set({
-        chats: [chat, ...state.chats],
-        activeChatId: chat.id,
-      });
+      // Единственный атомарный update: только activeChatId.
+      set({ activeChatId: chat.id });
+      return { created: false };
+    }
 
-      return { created: true };
-    },
+    // Новый чат — prepend + выставить активным одним сеттером.
+    set({
+      chats: [chat, ...chats],
+      activeChatId: chat.id,
+    });
+    return { created: true };
+  },
 
-    setActiveChat: (chatId) => set({ activeChatId: chatId }),
+  /* ---------------- setActiveChat ---------------- */
 
-    clearActiveChat: () => set({ activeChatId: null }),
+  /**
+   * Назначить `chatId` активным (выбранным в UI) чатом.
+   *
+   * **no-op оптимизация**: если переданный `chatId` уже совпадает с текущим
+   * `activeChatId` — функция ничего не делает, не вызывает `set()` и не
+   * порождает ререндер.
+   *
+   * Примечание по дизайну: намеренно **не выполняется валидация** существования
+   * чата с таким `id`. Это позволяет выставить ожидаемый `activeChatId` ещё
+   * до фактической загрузки чата (например, при deep-link / переходе по URL).
+   * Гарант безопасности — `getActiveChat()` вернёт `null`, если чат не найден.
+   *
+   * @param chatId  Идентификатор чата, который нужно сделать активным.
+   */
+  setActiveChat: (chatId) => {
+    // Guard: тот же самый id → нет изменений, нет ререндера.
+    if (get().activeChatId === chatId) return;
 
-    getActiveChat: () => {
-      const { chats, activeChatId } = get();
-      if (!activeChatId) return null;
-      
-      return chats.find((c) => c.id === activeChatId) ?? null;
-    },
-  }),
-);
+    set({ activeChatId: chatId });
+  },
+
+  /* ---------------- clearActiveChat ---------------- */
+
+  /**
+   * Сбросить активный чат (закрыть правую панель сообщений, вернуться в
+   * «пустое» состояние).
+   *
+   * **no-op оптимизация**: если `activeChatId` уже `null` → нет вызова `set()`.
+   */
+  clearActiveChat: () => {
+    if (get().activeChatId === null) return;
+
+    set({ activeChatId: null });
+  },
+
+  /* ---------------- getActiveChat ---------------- */
+
+  /**
+   * Синхронно вернуть **объект активного чата** или `null`, если активный
+   * чат не выбран / не найден в коллекции.
+   *
+   * Семантика: `activeChatId` это «указатель» на запись в `chats`; функция
+   * разыменовывает указатель, возвращая реальные данные чата для панели
+   * сообщений, заголовка, аватара и т.д.
+   *
+   * @returns  `Chat` активного чата, либо `null` если:
+   *           а) `activeChatId === null`, или
+   *           б) чат с id = activeChatId не обнаружен в `chats`
+   *              (возможно, был удалён или ещё не загружен).
+   *
+   * @remarks  Сложность — `O(n)` по количеству чатов. Для текущего домена
+   *           (несколько сотен чатов максимум) это допустимо. При росте
+   *           порядка до 10k+ стоит заменить flat-массив на нормализованную
+   *           структуру `Record<chatId, Chat>` + отдельный массив порядка.
+   */
+  getActiveChat: () => {
+    const { chats, activeChatId } = get();
+    if (!activeChatId) return null;
+
+    // Линейный поиск — достаточно для числа чатов < 1000.
+    return chats.find((c) => c.id === activeChatId) ?? null;
+  },
+}));

@@ -1,91 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { create } from "zustand";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { MessageStatus, type Message } from "./types";
+import { useMessageStore } from "./messageStore";
 
-type MessageState = {
-  byChatId: Record<string, Message[]>;
-  appendMessage: (message: Message) => void;
-  updateMessage: (messageId: string, updates: Partial<Message>) => void;
-  removeMessage: (messageId: string) => void;
-};
-
-function sortMessages(messages: Message[]): Message[] {
-  return [...messages].sort((a, b) => a.timestamp - b.timestamp);
-}
-
-const createTestStore = () =>
-  create<MessageState>((set) => ({
-    byChatId: {},
-    appendMessage: (message) => {
-      set((state) => {
-        const list = state.byChatId[message.chatId] ?? [];
-        const exists = list.some(
-          (m) =>
-            m.id === message.id ||
-            (message.idMessage && m.idMessage === message.idMessage),
-        );
-        if (exists) return state;
-
-        let nextList: Message[];
-        if (
-          list.length === 0 ||
-          message.timestamp >= list[list.length - 1].timestamp
-        ) {
-          nextList = [...list, message];
-        } else {
-          nextList = sortMessages([...list, message]);
-        }
-
-        return {
-          byChatId: {
-            ...state.byChatId,
-            [message.chatId]: nextList,
-          },
-        };
-      });
-    },
-    updateMessage: (messageId, updates) => {
-      set((state) => {
-        const next = { ...state.byChatId };
-
-        for (const chatId in next) {
-          const list = next[chatId];
-          const messageIndex = list.findIndex((m) => m.id === messageId);
-          if (messageIndex !== -1) {
-            next[chatId] = [
-              ...list.slice(0, messageIndex),
-              { ...list[messageIndex], ...updates },
-              ...list.slice(messageIndex + 1),
-            ];
-            break;
-          }
-        }
-
-        return { byChatId: next };
-      });
-    },
-    removeMessage: (messageId) => {
-      set((state) => {
-        const next = { ...state.byChatId };
-
-        for (const chatId in next) {
-          const list = next[chatId];
-          const messageIndex = list.findIndex((m) => m.id === messageId);
-          if (messageIndex !== -1) {
-            next[chatId] = [
-              ...list.slice(0, messageIndex),
-              ...list.slice(messageIndex + 1),
-            ];
-            break;
-          }
-        }
-
-        return { byChatId: next };
-      });
-    },
-  }));
-
-// Фабрика тестовых сообщений
+/* -------------------------------------------------------------------------- */
+/*                     Типы и фабрика тестовых сообщений                     */
+/* -------------------------------------------------------------------------- */
 
 type MakeMessageInput = {
   id: string;
@@ -97,6 +16,10 @@ type MakeMessageInput = {
   idMessage?: string;
 };
 
+/**
+ * Фабрика доменных сообщений для тестов.
+ * Подставляет валидные дефолты для всех необязательных полей.
+ */
 const makeMessage = ({
   id,
   chatId = "chat1",
@@ -119,10 +42,13 @@ const makeMessage = ({
 const CHAT_1 = "chat1";
 const CHAT_2 = "chat2";
 
-// Хелперы для работы со стором
+/* -------------------------------------------------------------------------- */
+/*                          Хелперы для работы со стором                      */
+/* -------------------------------------------------------------------------- */
 
-type Store = ReturnType<typeof createTestStore>;
+type Store = typeof useMessageStore;
 
+/** Текущее неизменённое состояние стора. */
 const state = (store: Store) => store.getState();
 const append = (store: Store, message: Message) =>
   state(store).appendMessage(message);
@@ -133,11 +59,11 @@ const update = (store: Store, id: string, updates: Partial<Message>) =>
 const remove = (store: Store, id: string) =>
   state(store).removeMessage(id);
 
-/** Возвращает список сообщений в чате. */
+/** Возвращает список сообщений в чате или пустой массив, если чата нет. */
 const messagesIn = (store: Store, chatId: string = CHAT_1): Message[] =>
   state(store).byChatId[chatId] ?? [];
 
-/** Проверяет id сообщений в чате (порядок тоже). */
+/** Проверяет `id` сообщений в чате с учётом порядка. */
 const expectMessageIds = (
   store: Store,
   ids: string[],
@@ -146,14 +72,29 @@ const expectMessageIds = (
   expect(messagesIn(store, chatId).map((m) => m.id)).toEqual(ids);
 };
 
-// Тесты
+/* -------------------------------------------------------------------------- */
+/*                                Тест-сьют                                   */
+/* -------------------------------------------------------------------------- */
 
 describe("messageStore", () => {
   let store: Store;
 
+  /**
+   * Перед каждым тестом:
+   *  1. Берём реальный singleton-стор `useMessageStore`.
+   *  2. Сбрасываем данные — перезаписываем `byChatId` пустым словарём
+   *     (partial-update API Zustand). Actions (`appendMessage` и т.п.)
+   *     не меняются между тестами, поэтому полный `replace: true` не нужен.
+   *  3. Очищаем все Vitest-mocks, чтобы шпионы из соседних it-блоков
+   *     не влияли на текущий тест.
+   */
   beforeEach(() => {
-    store = createTestStore();
+    store = useMessageStore;
+    store.setState({ byChatId: {} });
+    vi.clearAllMocks();
   });
+
+  /* ---------------- appendMessage ---------------- */
 
   describe("appendMessage", () => {
     it("should add message to empty chat", () => {
@@ -249,7 +190,20 @@ describe("messageStore", () => {
       expect(messagesIn(store, CHAT_1)).toEqual([message1]);
       expect(messagesIn(store, CHAT_2)).toEqual([message2]);
     });
+
+    /* --- Ссылочная стабильность при дедупе --- */
+    it("should keep stable reference when message already exists (no rerender)", () => {
+      const message = makeMessage({ id: "msg1" });
+      append(store, message);
+      const prevByChatId = state(store).byChatId;
+
+      append(store, { ...message, text: "trying duplicate" });
+
+      expect(state(store).byChatId).toBe(prevByChatId);
+    });
   });
+
+  /* ---------------- updateMessage ---------------- */
 
   describe("updateMessage", () => {
     it("should update message by id", () => {
@@ -310,7 +264,65 @@ describe("messageStore", () => {
       expect(msg.text).toBe("Hello");
       expect(msg.status).toBe(MessageStatus.Sent);
     });
+
+    it("should update message found by idMessage (consistency with append)", () => {
+      append(
+        store,
+        makeMessage({
+          id: "internal-id-1",
+          idMessage: "external-9000",
+          text: "original",
+        }),
+      );
+
+      update(store, "external-9000", {
+        text: "found via idMessage",
+        status: MessageStatus.Sent,
+      });
+
+      const [msg] = messagesIn(store);
+      expect(msg.id).toBe("internal-id-1");
+      expect(msg.idMessage).toBe("external-9000");
+      expect(msg.text).toBe("found via idMessage");
+      expect(msg.status).toBe(MessageStatus.Sent);
+    });
+
+    it("should be no-op when updates object is empty", () => {
+      append(store, makeMessage({ id: "msg1", text: "Hello" }));
+      const prevByChatId = state(store).byChatId;
+
+      update(store, "msg1", {});
+
+      expect(state(store).byChatId).toBe(prevByChatId);
+    });
+
+    it("should be no-op when update values equal current (same data)", () => {
+      append(
+        store,
+        makeMessage({
+          id: "msg1",
+          text: "Hello",
+          status: MessageStatus.Sent,
+        }),
+      );
+      const prevByChatId = state(store).byChatId;
+
+      update(store, "msg1", { text: "Hello", status: MessageStatus.Sent });
+
+      expect(state(store).byChatId).toBe(prevByChatId);
+    });
+
+    it("should be no-op (stable reference) when message id not found", () => {
+      append(store, makeMessage({ id: "msg1" }));
+      const prevByChatId = state(store).byChatId;
+
+      update(store, "ghost-id", { text: "nothing" });
+
+      expect(state(store).byChatId).toBe(prevByChatId);
+    });
   });
+
+  /* ---------------- removeMessage ---------------- */
 
   describe("removeMessage", () => {
     it("should remove message by id", () => {
@@ -365,7 +377,36 @@ describe("messageStore", () => {
 
       expectMessageIds(store, ["msg1", "msg3"]);
     });
+
+    /* --- Remove по idMessage и ссылочная стабильность --- */
+
+    it("should remove message found by idMessage", () => {
+      append(
+        store,
+        makeMessage({
+          id: "internal-id-99",
+          idMessage: "ext-del-42",
+          text: "to remove",
+        }),
+      );
+      expect(messagesIn(store)).toHaveLength(1);
+
+      remove(store, "ext-del-42");
+
+      expect(messagesIn(store)).toHaveLength(0);
+    });
+
+    it("should be no-op (stable reference) when removing non-existent id", () => {
+      append(store, makeMessage({ id: "msg1" }));
+      const prevByChatId = state(store).byChatId;
+
+      remove(store, "i-do-not-exist");
+
+      expect(state(store).byChatId).toBe(prevByChatId);
+    });
   });
+
+  /* ---------------- integration tests ---------------- */
 
   describe("integration tests", () => {
     it("should handle complete message lifecycle", () => {
@@ -413,21 +454,41 @@ describe("messageStore", () => {
         timestamp: 1500,
       });
 
-      // Добавляем сообщения в разные чаты
       appendAll(store, chat1Msg1, chat2Msg1, chat1Msg2);
 
       expect(messagesIn(store, CHAT_1)).toHaveLength(2);
       expect(messagesIn(store, CHAT_2)).toHaveLength(1);
 
-      // Обновляем сообщение в чате 1
       update(store, "msg1", { text: "Updated" });
       expect(messagesIn(store, CHAT_1)[0].text).toBe("Updated");
       expect(messagesIn(store, CHAT_2)[0].text).toBe("Hello from chat2");
 
-      // Удаляем сообщение из чата 2
       remove(store, "msg3");
       expect(messagesIn(store, CHAT_1)).toHaveLength(2);
       expect(messagesIn(store, CHAT_2)).toHaveLength(0);
+    });
+
+    /**
+     * Регрессионный кейс: сценарий, когда статус входящего API-сообщения
+     * обновляется по его внешнему `idMessage`, а удаление по «внутреннему»
+     * `id`, назначенному на фронте. Оба способа должны работать в связке.
+     */
+    it("mixed id / idMessage operations on the same message", () => {
+      const msg = makeMessage({
+        id: "local-abcd",
+        idMessage: "green-123",
+        text: "outgoing ping",
+        status: MessageStatus.Pending,
+      });
+      append(store, msg);
+
+      // 1) Обновляем через idMessage (симуляция подтверждения от API)
+      update(store, "green-123", { status: MessageStatus.Sent });
+      expect(state(store).byChatId[CHAT_1][0].status).toBe(MessageStatus.Sent);
+
+      // 2) Удаляем через внутренний id
+      remove(store, "local-abcd");
+      expect(messagesIn(store)).toHaveLength(0);
     });
   });
 });
